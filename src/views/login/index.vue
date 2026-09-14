@@ -1,8 +1,13 @@
 <script setup>
-  import { ref } from 'vue'
-  
-  let loginForm = ref({username:'', password:''})
-  
+import { ref } from 'vue'
+
+const loginForm = ref({ username: '', password: '' })
+
+const login = () => {}
+
+const reset = () => {
+  loginForm.value = { username: '', password: '' }
+}
 </script>
 
 <template>
@@ -19,8 +24,8 @@
         </el-form-item>
 
         <el-form-item>
-          <el-button class="button" type="primary" @click="">登 录</el-button>
-          <el-button class="button" type="info" @click="">重 置</el-button>
+          <el-button class="button" type="primary" @click="login">登 录</el-button>
+          <el-button class="button" type="info" @click="reset">重 置</el-button>
         </el-form-item>
       </el-form>
     </div>
