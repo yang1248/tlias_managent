@@ -10,11 +10,11 @@
       <el-table-column prop="name" label="部门名称" width="260" align="center" />
       <el-table-column prop="updateTime" label="最后操作时间" width="300" align="center" />
       <el-table-column label="操作" align="center">
-        <template #default>
-          <el-button type="primary" size="small"
+        <template #default="scope">
+          <el-button type="primary" size="small" @click="edit(scope.row.id)"
             ><el-icon><Edit /></el-icon>编辑</el-button
           >
-          <el-button type="danger" size="small"
+          <el-button type="danger" size="small" @click="deleteById(scope.row.id)"
             ><el-icon><Delete /></el-icon>删除</el-button
           >
         </template>
@@ -40,8 +40,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
-import { queryAllApi, addApi } from '../../api/dept'
-import { ElMessage } from 'element-plus'
+import { queryAllApi, addApi, queryByIdApi, updateApi, deleteByIdApi } from '../../api/dept'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 //钩子函数
 onMounted(() => {
@@ -71,7 +71,13 @@ const save = async () => {
   deptFromRef.value.validate(async (valid) => {
     //valid表示是否校验通过
     if (valid) {
-      const result = await addApi(dept.value)
+      let result
+      if (dept.value.id) {
+        result = await updateApi(dept.value)
+      } else {
+        result = await addApi(dept.value)
+      }
+
       if (result.code) {
         //成功
         //提示信息
@@ -112,6 +118,43 @@ const deptFromRef = ref()
 
 //表单引用
 const deptList = ref([])
+
+//编辑操作
+const edit = async (id) => {
+  fromTitle.value = '编辑部门'
+  //重置表单校验规则提示信息
+  if (deptFromRef.value) {
+    deptFromRef.value.resetFields()
+  }
+
+  const result = await queryByIdApi(id)
+  if (result.code) {
+    dialogFormVisible.value = true
+    dept.value = result.data
+  }
+}
+
+//删除
+const deleteById = async (id) => {
+  //弹出确认框
+  ElMessageBox.confirm('您确认删除该部门吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(async () => {
+      const result = await deleteByIdApi(id)
+      if (result.code) {
+        ElMessage.success('删除成功')
+        search()
+      } else {
+        ElMessage.error(result.msg)
+      }
+    })
+    .catch(() => {
+      ElMessage.info('已取消删除')
+    })
+}
 </script>
 
 <style scoped>
