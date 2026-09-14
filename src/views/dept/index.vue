@@ -26,7 +26,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
-import axios from 'axios'
+import { queryAllApi } from '../../api/dept'
 
 //钩子函数
 onMounted(() => {
@@ -35,10 +35,10 @@ onMounted(() => {
 
 //查询
 const search = async () => {
-  const result = await axios.get('https://apifoxmock.com/m1/3128855-1224313-default/depts')
-  if (result.data.code) {
+  const result = await queryAllApi()
+  if (result.code) {
     //js中隐式类型转换, 0 -> false, 其他数字 -> true
-    deptList.value = result.data.data
+    deptList.value = result.data
   }
 }
 
