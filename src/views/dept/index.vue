@@ -1,7 +1,7 @@
 <template>
   <h1>部门管理</h1>
   <div class="container">
-    <el-button type="primary">+ 新增部门</el-button>
+    <el-button type="primary" @click="addDept">+ 新增部门</el-button>
   </div>
 
   <div class="container">
@@ -21,16 +21,81 @@
       </el-table-column>
     </el-table>
   </div>
+
+  <el-dialog v-model="dialogFormVisible" :title="fromTitle" width="500">
+    <el-form :model="dept" :rules="rules" ref="deptFromRef">
+      <el-form-item label="部门名称" :label-width="'80px'" prop="name">
+        <el-input v-model="dept.name" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取消</el-button>
+        <el-button type="primary" @click="save">确定</el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { Edit, Delete } from '@element-plus/icons-vue'
-import { queryAllApi } from '../../api/dept'
+import { queryAllApi, addApi } from '../../api/dept'
+import { ElMessage } from 'element-plus'
 
 //钩子函数
 onMounted(() => {
   search()
+})
+
+//对话框
+const dialogFormVisible = ref(false)
+const fromTitle = ref('')
+const dept = ref({ name: '' })
+
+//新增部门
+const addDept = () => {
+  dialogFormVisible.value = true
+  fromTitle.value = '新增部门'
+  dept.value.name = ''
+  //重置表单校验规则提示信息
+  if (deptFromRef.value) {
+    deptFromRef.value.resetFields()
+  }
+}
+
+//保存部门
+const save = async () => {
+  //表单校验
+  if (!deptFromRef.value) return
+  deptFromRef.value.validate(async (valid) => {
+    //valid表示是否校验通过
+    if (valid) {
+      const result = await addApi(dept.value)
+      if (result.code) {
+        //成功
+        //提示信息
+        ElMessage.success('新增成功')
+        //关闭窗口
+        dialogFormVisible.value = false
+        //刷新页面
+        search()
+      } else {
+        //失败
+        ElMessage.error(result.msg)
+      }
+    } else {
+      ElMessage.error('表单校验失败')
+    }
+  })
+}
+
+//表单校验规则
+const rules = ref({
+  name: [
+    { required: true, message: '请输入部门名称', trigger: 'blur' },
+    { min: 2, max: 20, message: '部门名称长度在2到20个字符之间', trigger: 'blur' }
+  ]
 })
 
 //查询
@@ -42,6 +107,10 @@ const search = async () => {
   }
 }
 
+//部门列表
+const deptFromRef = ref()
+
+//表单引用
 const deptList = ref([])
 </script>
 
