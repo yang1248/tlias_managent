@@ -246,7 +246,7 @@ watch(
   <!-- 功能按钮 -->
   <div class="container">
     <el-button type="primary" @click="addEmp">+ 新增员工</el-button>
-    <el-button type="danger" @click="dele">- 批量删除</el-button>
+    <el-button type="danger" @click="">- 批量删除</el-button>
   </div>
 
   <!-- 表格 -->
@@ -276,13 +276,13 @@ watch(
         </template>
       </el-table-column>
       <el-table-column prop="entryDate" label="入职日期" width="180" align="center" />
-      <el-table-column prop="updateDate" label="最后操作时间" width="200" align="center" />
+      <el-table-column prop="updateTime" label="最后操作时间" width="200" align="center" />
       <el-table-column label="操作" align="center">
         <template #default>
-          <el-button type="primary" size="small" @click="edit"
+          <el-button type="primary" size="small" @click=""
             ><el-icon><Edit /></el-icon>编辑</el-button
           >
-          <el-button type="danger" size="small" @click="dele"
+          <el-button type="danger" size="small" @click=""
             ><el-icon><Delete /></el-icon>删除</el-button
           >
         </template>
@@ -447,7 +447,7 @@ watch(
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="sa">保存</el-button>
+        <el-button type="primary" @click="">保存</el-button>
       </span>
     </template>
   </el-dialog>
