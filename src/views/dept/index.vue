@@ -23,7 +23,7 @@
   </div>
 
   <el-dialog v-model="dialogFormVisible" :title="fromTitle" width="500">
-    <el-form :model="dept" :rules="rules" ref="deptFromRef">
+    <el-form :model="dept" :rules="rules" ref="deptFromRef" @submit.prevent>
       <el-form-item label="部门名称" :label-width="'80px'" prop="name">
         <el-input v-model="dept.name" />
       </el-form-item>
