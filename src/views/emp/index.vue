@@ -1,11 +1,13 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 //搜索表单对象
 const searchEmp = ref({
   name: '',
   gender: '',
-  date: []
+  date: [],
+  begin: '',
+  end: ''
 })
 
 //查询员工列表
@@ -18,10 +20,59 @@ const clean = () => {
   searchEmp.value = {
     name: '',
     gender: '',
-    date: []
+    date: [],
+    begin: '',
+    end: ''
   }
   search()
 }
+
+//侦听searchEmp对象的变化
+watch(
+  () => searchEmp.value.date,
+  (newVal) => {
+    if (newVal.length == 2) {
+      searchEmp.value.begin = newVal[0]
+      searchEmp.value.end = newVal[1]
+    } else {
+      searchEmp.value.begin = ''
+      searchEmp.value.end = ''
+    }
+  },
+  { deep: true }
+)
+
+//watch 侦听器----------演示-----------
+//1.侦听一个响应式数据
+// const a = ref('')
+// watch(a, (newVal, oldVal) => {
+//   console.log('a changed from', oldVal, 'to', newVal)
+// })
+
+//2.侦听一个对象
+// const obj = ref({
+//   name: '',
+//   age: 0
+// })
+// watch(
+//   obj,
+//   (newVal, oldVal) => {
+//     console.log('obj changed from', oldVal, 'to', newVal)
+//   },
+//   { deep: true }
+// )
+
+//3.侦听对象中的某一个属性
+// const user = ref({
+//   name: '',
+//   age: 0
+// })
+// watch(
+//   () => user.value.name,
+//   (newVal, oldVal) => {
+//     console.log('user.name changed from', oldVal, 'to', newVal)
+//   }
+// )
 </script>
 
 <template>
