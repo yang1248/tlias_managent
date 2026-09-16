@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { queryPageApi } from '../../api/emp'
+import { queryPageApi, addApi } from '../../api/emp'
 import { ElMessage } from 'element-plus'
 import { queryAllApi as queryAllDeptApi } from '../../api/dept'
 
@@ -145,6 +145,23 @@ const handleCurrentChange = (val) => {
 const addEmp = () => {
   dialogTitle.value = '新增员工'
   dialogVisible.value = true
+  employee.value = {
+    username: '',
+    name: '',
+    gender: '',
+    phone: '',
+    job: '',
+    salary: '',
+    deptId: '',
+    entryDate: '',
+    image: '',
+    exprList: []
+  }
+
+  //重置表单的校验规则-提示信息
+  if (empFormRef.value) {
+    empFormRef.value.resetFields()
+  }
 }
 
 //新增/修改表单
@@ -210,6 +227,48 @@ watch(
   },
   { deep: true }
 )
+
+//保存员工信息
+const save = async () => {
+  if (!empFormRef.value) return
+  empFormRef.value.validate(async (valid) => {
+    //valid表示是否校验通过
+    if (valid) {
+      const result = await addApi(employee.value)
+      if (result.code) {
+        ElMessage.success('保存成功')
+        dialogVisible.value = false
+        search()
+      } else {
+        ElMessage.error(result.msg)
+      }
+    } else {
+      ElMessage.error('表单校验失败')
+    }
+  })
+
+  //
+}
+
+//表单校验规则
+const rules = ref({
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 2, max: 20, message: '用户名长度应在2到20个字符之间', trigger: 'blur' }
+  ],
+  name: [
+    { required: true, message: '请输入姓名', trigger: 'blur' },
+    { min: 2, max: 10, message: '姓名长度应在2到10个字符之间', trigger: 'blur' }
+  ],
+  gender: [{ required: true, message: '请选择性别', trigger: 'change' }],
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入有效的手机号', trigger: 'blur' }
+  ]
+})
+
+//表单校验
+const empFormRef = ref()
 </script>
 
 <template>
@@ -306,18 +365,18 @@ watch(
 
   <!-- 新增员工/修改员工对话框 -->
   <el-dialog v-model="dialogVisible" :title="dialogTitle">
-    <el-form :model="employee" label-width="80px">
+    <el-form :model="employee" :rules="rules" ref="empFormRef" label-width="80px">
       <!-- 基本信息 -->
       <!-- 第一行 -->
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="用户名">
+          <el-form-item label="用户名" prop="username">
             <el-input v-model="employee.username" placeholder="请输入员工用户名，2-20个字"></el-input>
           </el-form-item>
         </el-col>
 
         <el-col :span="12">
-          <el-form-item label="姓名">
+          <el-form-item label="姓名" prop="name">
             <el-input v-model="employee.name" placeholder="请输入员工姓名，2-10个字"></el-input>
           </el-form-item>
         </el-col>
@@ -326,7 +385,7 @@ watch(
       <!-- 第二行 -->
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="性别">
+          <el-form-item label="性别" prop="gender">
             <el-select v-model="employee.gender" placeholder="请选择性别" style="width: 100%">
               <el-option v-for="g in genders" :key="g.value" :label="g.name" :value="g.value"></el-option>
             </el-select>
@@ -334,7 +393,7 @@ watch(
         </el-col>
 
         <el-col :span="12">
-          <el-form-item label="手机号">
+          <el-form-item label="手机号" prop="phone">
             <el-input v-model="employee.phone" placeholder="请输入员工手机号"></el-input>
           </el-form-item>
         </el-col>
@@ -447,7 +506,7 @@ watch(
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="">保存</el-button>
+        <el-button type="primary" @click="save">保存</el-button>
       </span>
     </template>
   </el-dialog>
