@@ -8,7 +8,10 @@ export const queryPageApi = (name, gender, begin, end, page, pageSize) =>
 export const addApi = (emp) => request.post('/emps', emp)
 
 //根据ID查询员工
+export const queryByIdApi = (id) => request.get(`/emps/${id}`)
 
 //修改
+export const updateApi = (emp) => request.put('/emps', emp)
 
 //删除
+export const deleteApi = (ids) => request.delete(`/emps?ids=${ids}`)

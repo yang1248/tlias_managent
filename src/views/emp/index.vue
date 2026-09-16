@@ -1,7 +1,7 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
-import { queryPageApi, addApi } from '../../api/emp'
-import { ElMessage } from 'element-plus'
+import { queryPageApi, addApi, queryByIdApi, updateApi, deleteApi } from '../../api/emp'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { queryAllApi as queryAllDeptApi } from '../../api/dept'
 
 //职位列表数据
@@ -234,7 +234,15 @@ const save = async () => {
   empFormRef.value.validate(async (valid) => {
     //valid表示是否校验通过
     if (valid) {
-      const result = await addApi(employee.value)
+      let result
+      if (employee.value.id) {
+        //修改
+        result = await updateApi(employee.value)
+      } else {
+        //新增
+        result = await addApi(employee.value)
+      }
+
       if (result.code) {
         ElMessage.success('保存成功')
         dialogVisible.value = false
@@ -269,6 +277,80 @@ const rules = ref({
 
 //表单校验
 const empFormRef = ref()
+
+//编辑功能
+const edit = async (id) => {
+  const result = await queryByIdApi(id)
+  if (result.code) {
+    employee.value = result.data
+    dialogVisible.value = true
+    dialogTitle.value = '编辑员工信息'
+
+    //对工作经历的处理
+    let exprList = employee.value.exprList
+    if (exprList && exprList.length > 0) {
+      exprList.forEach((expr) => {
+        expr.exprDate = [expr.begin, expr.end]
+      })
+    }
+  } else {
+    ElMessage.error(result.msg)
+  }
+}
+
+//删除员工
+const deleteById = (id) => {
+  ElMessageBox.confirm('您确认删除该员工吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(async () => {
+      const result = await deleteApi(id)
+      if (result.code) {
+        ElMessage.success('删除成功')
+        search()
+      } else {
+        ElMessage.error(result.msg)
+      }
+    })
+    .catch(() => {
+      ElMessage.info('已取消删除')
+    })
+}
+
+//记录勾选的员工的id
+const selectedIds = ref([])
+
+//复选框够选发生变化是触发 val:当前选中的记录
+const handleSelectionChange = (selection) => {
+  selectedIds.value = selection.map((item) => item.id)
+}
+
+//批量删除员工
+const deleteByIds = () => {
+  ElMessageBox.confirm('您确认删除选中的员工吗?', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning'
+  })
+    .then(async () => {
+      if (selectedIds.value && selectedIds.value.length > 0) {
+        const result = await deleteApi(selectedIds.value)
+        if (result.code) {
+          ElMessage.success('删除成功')
+          search()
+        } else {
+          ElMessage.error(result.msg)
+        }
+      } else {
+        ElMessage.info('请先选择要删除的员工')
+      }
+    })
+    .catch(() => {
+      ElMessage.info('已取消删除')
+    })
+}
 </script>
 
 <template>
@@ -305,12 +387,12 @@ const empFormRef = ref()
   <!-- 功能按钮 -->
   <div class="container">
     <el-button type="primary" @click="addEmp">+ 新增员工</el-button>
-    <el-button type="danger" @click="">- 批量删除</el-button>
+    <el-button type="danger" @click="deleteByIds">- 批量删除</el-button>
   </div>
 
   <!-- 表格 -->
   <div class="container">
-    <el-table :data="empList" border style="width: 100%">
+    <el-table :data="empList" border style="width: 100%" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center" />
       <el-table-column prop="name" label="姓名" width="120" align="center" />
       <el-table-column label="性别" width="120" align="center">
@@ -337,11 +419,11 @@ const empFormRef = ref()
       <el-table-column prop="entryDate" label="入职日期" width="180" align="center" />
       <el-table-column prop="updateTime" label="最后操作时间" width="200" align="center" />
       <el-table-column label="操作" align="center">
-        <template #default>
-          <el-button type="primary" size="small" @click=""
+        <template #default="scope">
+          <el-button type="primary" size="small" @click="edit(scope.row.id)"
             ><el-icon><Edit /></el-icon>编辑</el-button
           >
-          <el-button type="danger" size="small" @click=""
+          <el-button type="danger" size="small" @click="deleteById(scope.row.id)"
             ><el-icon><Delete /></el-icon>删除</el-button
           >
         </template>
