@@ -4,6 +4,8 @@ import { queryPageApi, addApi, queryByIdApi, updateApi, deleteApi } from '../../
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { queryAllApi as queryAllDeptApi } from '../../api/dept'
 
+const token = ref({})
+
 //职位列表数据
 const jobs = ref([
   { name: '班主任', value: 1 },
@@ -35,7 +37,15 @@ const searchEmp = ref({
 onMounted(() => {
   search() //查询员工列表数据
   queryAllDepts() //查询所有的部门列表数据
+  getToken()
 })
+
+const getToken = () => {
+  const loginUser = JSON.parse(localStorage.getItem('loginUser'))
+  if (loginUser && loginUser.token) {
+    token.value = loginUser.token
+  }
+}
 
 //查询所有的部门数据
 const queryAllDepts = async () => {
@@ -527,6 +537,7 @@ const deleteByIds = () => {
             <el-upload
               class="avatar-uploader"
               action="/api/upload"
+              :headers="{ 'token': token }"
               :show-file-list="false"
               :on-success="handleAvatarSuccess"
               :before-upload="beforeAvatarUpload"
